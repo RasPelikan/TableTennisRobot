@@ -17,7 +17,23 @@ public class ConfigurationUtils {
 	private static final String PROPS_HTTPSADMIN_KEYSTOREPASSWORD = "httpsadmin.keystore.password";
 	private static final String PROPS_HTTPSADMIN_HOST = "httpsadmin.host";
 	private static final String PROPS_HTTPSADMIN_PORT = "httpsadmin.port";
+	
+	private static final String PROPS_BUTTON_1_GPIO = "button.1.gpio";
+	private static final String PROPS_BUTTON_2_GPIO = "button.2.gpio";
+	private static final String PROPS_BUTTON_3_GPIO = "button.3.gpio";
+	private static final String PROPS_BUTTON_4_GPIO = "button.4.gpio";
+	private static final String PROPS_BUTTON_UP_GPIO = "button.up.gpio";
+	private static final String PROPS_BUTTON_DOWN_GPIO = "button.down.gpio";
+	private static final String PROPS_BUTTON_LEFT_GPIO = "button.left.gpio";
+	private static final String PROPS_BUTTON_RIGHT_GPIO = "button.right.gpio";
+	private static final String PROPS_BUTTON_MAIN_GPIO = "button.main.gpio";
+	
+	private static final String PROPS_I2C_BUS = "i2c.bus";
 
+	private static final String PROPS_SERVOCONTROLLER_ADDRESS = "servocontroller.address";
+	private static final String PROPS_SERVO_SPEED_SLOT = "servocontroller.servo.speed.slot";
+	private static final String PROPS_SERVO_SPIN_SLOT = "servocontroller.servo.spin.slot";
+	
 	private Properties props;
 	
 	public ConfigurationUtils(final String[] args) {
@@ -82,23 +98,69 @@ public class ConfigurationUtils {
 	}
 	
 	public String getHttpsAdminKeystorePassword() {
-		
 		return props.getProperty(PROPS_HTTPSADMIN_KEYSTOREPASSWORD);
-		
 	}
 
 	public int getHttpsAdminPort() {
-		
 		return getIntPropertyAvailable(PROPS_HTTPSADMIN_PORT);
-		
 	}
 	
 	public String getHttpsAdminHost() {
-		
 		return props.getProperty(PROPS_HTTPSADMIN_HOST);
-		
 	}
 	
+	public int getButton1Gpio() {
+		return getIntPropertyAvailable(PROPS_BUTTON_1_GPIO);
+	}
+
+	public int getButton2Gpio() {
+		return getIntPropertyAvailable(PROPS_BUTTON_2_GPIO);
+	}
+
+	public int getButton3Gpio() {
+		return getIntPropertyAvailable(PROPS_BUTTON_3_GPIO);
+	}
+
+	public int getButton4Gpio() {
+		return getIntPropertyAvailable(PROPS_BUTTON_4_GPIO);
+	}
+
+	public int getButtonUpGpio() {
+		return getIntPropertyAvailable(PROPS_BUTTON_UP_GPIO);
+	}
+
+	public int getButtonDownGpio() {
+		return getIntPropertyAvailable(PROPS_BUTTON_DOWN_GPIO);
+	}
+
+	public int getButtonLeftGpio() {
+		return getIntPropertyAvailable(PROPS_BUTTON_LEFT_GPIO);
+	}
+
+	public int getButtonRightGpio() {
+		return getIntPropertyAvailable(PROPS_BUTTON_RIGHT_GPIO);
+	}
+
+	public int getButtonMainGpio() {
+		return getIntPropertyAvailable(PROPS_BUTTON_MAIN_GPIO);
+	}
+	
+	public int getI2CBus() {
+		return getIntPropertyAvailable(PROPS_I2C_BUS);
+	}
+	
+	public int getSpeedServoSlot() {
+		return getIntPropertyAvailable(PROPS_SERVO_SPEED_SLOT);
+	}
+	
+	public int getSpinServoSlot() {
+		return getIntPropertyAvailable(PROPS_SERVO_SPIN_SLOT);
+	}
+	
+	public int getServocontrollerAddress() {
+		return getIntPropertyAvailable(PROPS_SERVOCONTROLLER_ADDRESS);
+	}
+
 	@SuppressWarnings("unused")
 	private float getFloatPropertyAvailable(final String propsName) {
 		
@@ -131,7 +193,11 @@ public class ConfigurationUtils {
 		}
 		try {
 			
-			return Integer.parseInt(value);
+			if (value.startsWith("0x")) {
+				return Integer.parseInt(value.substring(2), 16);
+			} else {
+				return Integer.parseInt(value);
+			}
 			
 		} catch(Exception e) {
 			
