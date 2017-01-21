@@ -32,7 +32,7 @@ void init_timer() {
  */
 void boot() {
 
-	uart_init();
+	//uart_init();
 	stdout = &uart_output;
 	stdin  = &uart_input;
 	sei();                      // enable global interrupts

@@ -26,7 +26,7 @@ OBJCOPY         := $(GNU_PREFIX)-objcopy
 SIZE            := $(GNU_PREFIX)-size
 
 MCU		:= atmega164p
-CLOCK_SPEED	:= 1000000UL
+CLOCK_SPEED	:= 8000000UL
 
 #function for removing duplicates in a list
 remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-out $(firstword $1),$1))))

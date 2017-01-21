@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include "buttons.h"
 #include "util.h"
 
@@ -81,19 +83,18 @@
 
 void buttons_init() {
 
+	clear_bit(BLUE_DDR, BLUE_PINNAME);     // set BLUE for input
+	set_bit(BLUE_PORT, BLUE_PINNAME);      // pull-up for BLUE
 	clear_bit(RED_DDR, RED_PINNAME);       // set RED for input
 	set_bit(RED_PORT, RED_PINNAME);        // pull-up for RED
 	clear_bit(BROWN_DDR, BROWN_PINNAME);   // set BROWN to input
 	set_bit(BROWN_PORT, BROWN_PINNAME);    // pull-up for BROWN
 	clear_bit(GREEN_DDR, GREEN_PINNAME);   // set GREEN for input
-	set_bit(GREEN_PORT, GREEN_PINNAME);  // pull-up for GREEN
-
+	set_bit(GREEN_PORT, GREEN_PINNAME);    // pull-up for GREEN
+	clear_bit(YELLOW_DDR, YELLOW_PINNAME); // set YELLOW for input
+	set_bit(YELLOW_PORT, YELLOW_PINNAME);  // pull-up for YELLOW
 	clear_bit(ORANGE_DDR, ORANGE_PINNAME); // set ORANGE for input
-	set_bit(YELLOW_DDR, YELLOW_PINNAME); // set YELLOW for output
-	clear_bit(BLUE_DDR, BLUE_PINNAME);     // set BLUE for input
-	set_bit(BLUE_PORT, BLUE_PINNAME);      // pull-up for BLUE
-
-	set_bit(RED_DDR, RED_PINNAME);
+	set_bit(ORANGE_DDR, ORANGE_PINNAME);   // pull-up for ORANGE
 
 	clear_bit(BUTTON_1_PORT, BUTTON_1_PINNAME); // BUTTON_1 not pressed
 	set_bit(BUTTON_1_DDR, BUTTON_1_PINNAME); // set BUTTON_1 for output
@@ -118,6 +119,18 @@ void buttons_init() {
 
 void check_buttons() {
 
+	bool furtherGreenChecks = true;
+	bool furtherBrownChecks = true;
+	bool furtherYellowChecks = true;
+
+	// MAIN (GREEN-BLACK)
+	if (is_bit_low(GREEN_PIN, GREEN_PINNAME)) {
+		set_bit(MAIN_PORT, MAIN_PINNAME);
+		furtherGreenChecks = false;
+	} else {
+		clear_bit(MAIN_PORT, MAIN_PINNAME);
+	}
+
 	// BUTTON_3 (RED-BLACK)
 	if (is_bit_low(RED_PIN, RED_PINNAME)) {
 		set_bit(BUTTON_3_PORT, BUTTON_3_PINNAME);
@@ -132,15 +145,28 @@ void check_buttons() {
 		// DOWN (RED-BROWN)
 		if (is_bit_low(BROWN_PIN, BROWN_PINNAME)) {
 			set_bit(DOWN_PORT, DOWN_PINNAME);
+			furtherBrownChecks = false;
 		} else {
 			clear_bit(DOWN_PORT, DOWN_PINNAME);
 		}
 
 		// BUTTON_2 (RED-GREEN)
-		if (is_bit_low(GREEN_PIN, GREEN_PINNAME)) {
-			set_bit(BUTTON_2_PORT, BUTTON_2_PINNAME);
+		if (furtherGreenChecks) {
+
+			if (is_bit_low(GREEN_PIN, GREEN_PINNAME)) {
+				set_bit(BUTTON_2_PORT, BUTTON_2_PINNAME);
+				furtherGreenChecks = false;
+			} else {
+				clear_bit(BUTTON_2_PORT, BUTTON_2_PINNAME);
+			}
+
+		}
+
+		if (is_bit_low(YELLOW_PIN, YELLOW_PINNAME)) {
+			set_bit(LEFT_PORT, LEFT_PINNAME);
+			furtherYellowChecks = false;
 		} else {
-			clear_bit(BUTTON_2_PORT, BUTTON_2_PINNAME);
+			clear_bit(LEFT_PORT, LEFT_PINNAME);
 		}
 
 		// reset RED for next cycle
@@ -149,42 +175,67 @@ void check_buttons() {
 
 	}
 
-	/*
+	if (furtherBrownChecks || furtherYellowChecks) {
 
-		// DOWN (RED-BROWN)
-		if (is_bit_high(BROWN_PIN, BROWN_PINNAME)) {
-			set_bit(DOWN_PORT, DOWN_PINNAME);
-		} else {
-			clear_bit(DOWN_PORT, DOWN_PINNAME);
+		set_bit(ORANGE_DDR, ORANGE_PINNAME);    // set ORANGE for output
+		set_bit(ORANGE_PORT, ORANGE_PINNAME);   // ORANGE to high (see manual chapter 14.2.3)
+		clear_bit(ORANGE_PORT, ORANGE_PINNAME); // ORANGE to low
+		nop();                                  // sync for reading (see manual Figure 14-4)
+
+		if (furtherBrownChecks) {
+
+			// (BROWN-ORANGE)
+			if (is_bit_low(BROWN_PIN, BROWN_PINNAME)) {
+				set_bit(UP_PORT, UP_PINNAME);
+			} else {
+				clear_bit(UP_PORT, UP_PINNAME);
+			}
+
 		}
 
-		// BUTTON_2 (RED-GREEN)
-		if (is_bit_high(GREEN_PIN, GREEN_PINNAME)) {
-			set_bit(BUTTON_2_PORT, BUTTON_2_PINNAME);
-		} else {
-			clear_bit(BUTTON_2_PORT, BUTTON_2_PINNAME);
+		if (furtherYellowChecks) {
+
+			// (YELLOW-ORANGE)
+			if (is_bit_low(YELLOW_PIN, YELLOW_PINNAME)) {
+				set_bit(RIGHT_PORT, RIGHT_PINNAME);
+				furtherYellowChecks = false;
+			} else {
+				clear_bit(RIGHT_PORT, RIGHT_PINNAME);
+			}
+
 		}
+
+		// reset ORANGE for next cycle
+		clear_bit(ORANGE_DDR, ORANGE_PINNAME);  // set ORANGE for input
+		set_bit(ORANGE_PORT, ORANGE_PINNAME);   // pull-up for ORANGE
 
 	}
 
-	// BUTTON_1 (
-	set_bit(GREEN_DDR, GREEN_PINNAME);
-	if (is_bit_high(YELLOW_PIN, GREEN_PINNAME)) {
-		set_bit(BUTTON_1_PORT, BUTTON_1_PINNAME);
-	} else {
-		clear_bit(BUTTON_1_PORT, BUTTON_1_PINNAME);
-	}
-	*/
+	if (furtherGreenChecks && furtherYellowChecks) {
 
-	// MAIN
+		set_bit(YELLOW_DDR, YELLOW_PINNAME);    // set YELLOW for output
+		set_bit(YELLOW_PORT, YELLOW_PINNAME);   // YELLOW to high (see manual chapter 14.2.3)
+		clear_bit(YELLOW_PORT, YELLOW_PINNAME); // YELLOW to low
+		nop();                                  // sync for reading (see manual Figure 14-4)
+
+		// BUTTON_1 (GREEN-YELLOW)
+		if (is_bit_low(GREEN_PIN, GREEN_PINNAME)) {
+			set_bit(BUTTON_1_PORT, BUTTON_1_PINNAME);
+		} else {
+			clear_bit(BUTTON_1_PORT, BUTTON_1_PINNAME);
+		}
+
+		// reset YELLOW for next cycle
+		clear_bit(YELLOW_DDR, YELLOW_PINNAME);  // set YELLOW for input
+		set_bit(YELLOW_PORT, YELLOW_PINNAME);   // pull-up for YELLOW
+
+	}
 
 	// BUTTON_4
-	/*
 	if (is_bit_low(BLUE_PIN, BLUE_PINNAME)) {
 		set_bit(BUTTON_4_PORT, BUTTON_4_PINNAME);
 	} else {
 		clear_bit(BUTTON_4_PORT, BUTTON_4_PINNAME);
 	}
 
-*/
 }
