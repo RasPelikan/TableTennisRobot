@@ -19,7 +19,8 @@ void init_timer() {
 	TIMSK0 = 0x00;			// Disable timer0 (if not yet disabled)
 	TCCR0A = 0x00;          // Mode = Normal
 	set_bit(TCCR0B, CS00);  // Prescaler to 64
-	set_bit(TCCR0B, CS01);  // Prescaler to 64
+	set_bit(TCCR0B, CS10);  // Prescaler to 64
+	clear_bit(TCCR0B, CS02);  // Prescaler to 64
 	TCNT0 = 0x00;			// Clear timer-counter
 	set_bit(TIMSK0, TOIE0); // enable timer0 overflow interrupt
 

@@ -141,6 +141,8 @@ void check_buttons() {
 		set_bit(RED_PORT, RED_PINNAME);   // RED to high (see manual chapter 14.2.3)
 		clear_bit(RED_PORT, RED_PINNAME); // RED to low
 		nop();                            // sync for reading (see manual Figure 14-4)
+		nop();
+		nop();
 
 		// DOWN (RED-BROWN)
 		if (is_bit_low(BROWN_PIN, BROWN_PINNAME)) {
@@ -171,6 +173,7 @@ void check_buttons() {
 
 		// reset RED for next cycle
 		clear_bit(RED_DDR, RED_PINNAME);    // set RED for input
+		clear_bit(RED_PORT, RED_PINNAME);     // pull-up for RED
 		set_bit(RED_PORT, RED_PINNAME);     // pull-up for RED
 
 	}
@@ -181,6 +184,8 @@ void check_buttons() {
 		set_bit(ORANGE_PORT, ORANGE_PINNAME);   // ORANGE to high (see manual chapter 14.2.3)
 		clear_bit(ORANGE_PORT, ORANGE_PINNAME); // ORANGE to low
 		nop();                                  // sync for reading (see manual Figure 14-4)
+		nop();
+		nop();
 
 		if (furtherBrownChecks) {
 
@@ -207,6 +212,7 @@ void check_buttons() {
 
 		// reset ORANGE for next cycle
 		clear_bit(ORANGE_DDR, ORANGE_PINNAME);  // set ORANGE for input
+		clear_bit(ORANGE_PORT, ORANGE_PINNAME);   // pull-up for ORANGE
 		set_bit(ORANGE_PORT, ORANGE_PINNAME);   // pull-up for ORANGE
 
 	}
@@ -217,6 +223,8 @@ void check_buttons() {
 		set_bit(YELLOW_PORT, YELLOW_PINNAME);   // YELLOW to high (see manual chapter 14.2.3)
 		clear_bit(YELLOW_PORT, YELLOW_PINNAME); // YELLOW to low
 		nop();                                  // sync for reading (see manual Figure 14-4)
+		nop();
+		nop();
 
 		// BUTTON_1 (GREEN-YELLOW)
 		if (is_bit_low(GREEN_PIN, GREEN_PINNAME)) {
@@ -227,6 +235,7 @@ void check_buttons() {
 
 		// reset YELLOW for next cycle
 		clear_bit(YELLOW_DDR, YELLOW_PINNAME);  // set YELLOW for input
+		clear_bit(YELLOW_PORT, YELLOW_PINNAME);   // pull-up for YELLOW
 		set_bit(YELLOW_PORT, YELLOW_PINNAME);   // pull-up for YELLOW
 
 	}
