@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <avr/io.h>
 
 #define BROWN_PORTLETTER B
@@ -14,25 +15,25 @@
 #define BLUE_PORTLETTER A
 #define BLUE_PINNUMBER 0
 
-#define BUTTON_1_PORTLETTER D
-#define BUTTON_1_PINNUMBER 5
-#define BUTTON_2_PORTLETTER D
-#define BUTTON_2_PINNUMBER 4
-#define BUTTON_3_PORTLETTER D
-#define BUTTON_3_PINNUMBER 3
-#define BUTTON_4_PORTLETTER D
-#define BUTTON_4_PINNUMBER 2
-#define UP_PORTLETTER D
-#define UP_PINNUMBER 6
-#define DOWN_PORTLETTER D
-#define DOWN_PINNUMBER 7
-#define LEFT_PORTLETTER C
-#define LEFT_PINNUMBER 2
-#define RIGHT_PORTLETTER C
-#define RIGHT_PINNUMBER 3
-#define MAIN_PORTLETTER C
-#define MAIN_PINNUMBER 4
+#define BUTTON_1_BIT 0
+#define BUTTON_1_BYTE 0
+#define BUTTON_2_BIT 1
+#define BUTTON_2_BYTE 0
+#define BUTTON_3_BIT 2
+#define BUTTON_3_BYTE 0
+#define BUTTON_4_BIT 3
+#define BUTTON_4_BYTE 0
+#define BUTTON_UP_BIT 4
+#define BUTTON_UP_BYTE 0
+#define BUTTON_DOWN_BIT 5
+#define BUTTON_DOWN_BYTE 0
+#define BUTTON_LEFT_BIT 6
+#define BUTTON_LEFT_BYTE 0
+#define BUTTON_RIGHT_BIT 7
+#define BUTTON_RIGHT_BYTE 0
+#define BUTTON_MAIN_BIT 0
+#define BUTTON_MAIN_BYTE 1
 
 void buttons_init();
 
-void check_buttons();
+bool check_buttons();
