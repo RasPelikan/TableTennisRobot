@@ -15,24 +15,15 @@
 #define BLUE_PORTLETTER A
 #define BLUE_PINNUMBER 0
 
-#define BUTTON_1_BIT 0
-#define BUTTON_1_BYTE 0
-#define BUTTON_2_BIT 1
-#define BUTTON_2_BYTE 0
-#define BUTTON_3_BIT 2
-#define BUTTON_3_BYTE 0
-#define BUTTON_4_BIT 3
-#define BUTTON_4_BYTE 0
-#define BUTTON_UP_BIT 4
-#define BUTTON_UP_BYTE 0
-#define BUTTON_DOWN_BIT 5
-#define BUTTON_DOWN_BYTE 0
-#define BUTTON_LEFT_BIT 6
-#define BUTTON_LEFT_BYTE 0
-#define BUTTON_RIGHT_BIT 7
-#define BUTTON_RIGHT_BYTE 0
-#define BUTTON_MAIN_BIT 0
-#define BUTTON_MAIN_BYTE 1
+#define BUTTON_1_ID 1
+#define BUTTON_2_ID 2
+#define BUTTON_3_ID 3
+#define BUTTON_4_ID 4
+#define BUTTON_UP_ID 5
+#define BUTTON_DOWN_ID 6
+#define BUTTON_LEFT_ID 7
+#define BUTTON_RIGHT_ID 8
+#define BUTTON_MAIN_ID 9
 
 void buttons_init();
 

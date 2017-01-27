@@ -6,13 +6,15 @@
 
 #include "util.h"
 #include "uart.h"
-//#include "I2C_slave.h"
+#include "I2C_slave.h"
 #include "buttons.h"
 
-#define NEWDATA_PORT
 #define I2C_ADDRESS 0x50
+#define STATUS_ADDRESS 0x00
+#define STATUS_OK 0x00
+#define STATUS_BUTTONS_CHANGED 0x01
 
-#define INDICATOR_PORTLETTER D
+#define INDICATOR_PORTLETTER C
 #define INDICATOR_PINNUMBER 2
 
 #define INDICATOR_PORT CONCAT(PORT, INDICATOR_PORTLETTER)
@@ -27,7 +29,10 @@ static volatile int do_it = ACKN;
 
 ISR(TIMER0_OVF_vect) {
 
-	do_it = CHECK_BUTTONS;
+	do_it += 1;
+	if (do_it == 4) {
+		do_it = ACKN;
+	}
 
 }
 
@@ -66,7 +71,8 @@ void boot() {
 	/*
 	 * I2C slave
 	 */
-	//I2C_init(I2C_ADDRESS);
+	txbuffer[STATUS_ADDRESS] = STATUS_OK;
+	init_twi_slave(I2C_ADDRESS);
 
 	/*
 	 * configure MCU
@@ -89,15 +95,13 @@ void boot() {
  */
 void shutdown() {
 
-	//I2C_stop();
-
 }
 
-void indicate_new_data() {
+void indicate_new_data(unsigned char status) {
 
-	set_bit(INDICATOR_PORT, INDICATOR_PINNAME); // INDICATOR high
-	nop();
-	clear_bit(INDICATOR_PORT, INDICATOR_PINNAME); // INDICATOR low
+	txbuffer[STATUS_ADDRESS] = status;
+
+	set_bit(INDICATOR_PIN, INDICATOR_PINNAME); // toggle INDICATOR to indicate action
 
 }
 
@@ -116,7 +120,7 @@ int main() {
 			case CHECK_BUTTONS:
 				do_it = ACKN;
 				if (check_buttons()) {
-					indicate_new_data();
+					indicate_new_data(STATUS_BUTTONS_CHANGED);
 				}
 				break;
 

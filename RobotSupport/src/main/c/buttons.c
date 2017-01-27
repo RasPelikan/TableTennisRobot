@@ -41,16 +41,6 @@
 #define BLUE_PINNAME CONCAT(P, CONCAT(BLUE_PORTLETTER, BLUE_PINNUMBER))
 #define BLUE_VAR CONCAT(pins, BLUE_PORTLETTER)
 
-#define BUTTON_1_VAR CONCAT(buttons, BUTTON_1_BYTE)
-#define BUTTON_2_VAR CONCAT(buttons, BUTTON_2_BYTE)
-#define BUTTON_3_VAR CONCAT(buttons, BUTTON_3_BYTE)
-#define BUTTON_4_VAR CONCAT(buttons, BUTTON_4_BYTE)
-#define BUTTON_UP_VAR CONCAT(buttons, BUTTON_UP_BYTE)
-#define BUTTON_DOWN_VAR CONCAT(buttons, BUTTON_DOWN_BYTE)
-#define BUTTON_LEFT_VAR CONCAT(buttons, BUTTON_LEFT_BYTE)
-#define BUTTON_RIGHT_VAR CONCAT(buttons, BUTTON_RIGHT_BYTE)
-#define BUTTON_MAIN_VAR CONCAT(buttons, BUTTON_MAIN_BYTE)
-
 void buttons_init() {
 
 	clear_bit(BLUE_DDR, BLUE_PINNAME);     // set BLUE for input
@@ -66,29 +56,18 @@ void buttons_init() {
 	clear_bit(ORANGE_DDR, ORANGE_PINNAME); // set ORANGE for input
 	set_bit(ORANGE_DDR, ORANGE_PINNAME);   // pull-up for ORANGE
 
-	txbuffer[BUTTONS0] = 0x00;
-	txbuffer[BUTTONS1] = 0x00;
+	txbuffer[BUTTONS] = 0x00;
 
 }
 
 bool check_buttons() {
 
-	bool furtherGreenChecks = true;
-	bool furtherBrownChecks = true;
-	bool furtherYellowChecks = true;
-
-	bool setButton1 = false;
-	bool setButton2 = false;
-
-	unsigned char buttons0 = txbuffer[BUTTONS0];
-	unsigned char buttons1 = txbuffer[BUTTONS1];
+	unsigned char pressedButton = 0x00;
 
 	// BUTTON_3 (RED-BLACK)
 	if (is_bit_low(RED_PIN, RED_PINNAME)) {
-		set_bit(BUTTON_3_VAR, BUTTON_3_BIT);
+		pressedButton = BUTTON_3_ID;
 	} else {
-		clear_bit(BUTTON_3_VAR, BUTTON_3_BIT);
-
 		set_bit(RED_DDR, RED_PINNAME);    // set RED for output
 		set_bit(RED_PORT, RED_PINNAME);   // RED to high (see manual chapter 14.2.3)
 		clear_bit(RED_PORT, RED_PINNAME); // RED to low
@@ -98,23 +77,16 @@ bool check_buttons() {
 
 		// DOWN (RED-BROWN)
 		if (is_bit_low(BROWN_PIN, BROWN_PINNAME)) {
-			set_bit(BUTTON_DOWN_VAR, BUTTON_DOWN_BIT);
-			furtherBrownChecks = false;
-		} else {
-			clear_bit(BUTTON_DOWN_VAR, BUTTON_DOWN_BIT);
+			pressedButton = BUTTON_DOWN_ID;
 		}
 
 		// BUTTON_2 (RED-GREEN)
 		if (is_bit_low(GREEN_PIN, GREEN_PINNAME)) {
-			setButton2 = true;
-			furtherGreenChecks = false;
+			pressedButton = BUTTON_2_ID;
 		}
 
 		if (is_bit_low(YELLOW_PIN, YELLOW_PINNAME)) {
-			set_bit(BUTTON_LEFT_VAR, BUTTON_LEFT_BIT);
-			furtherYellowChecks = false;
-		} else {
-			clear_bit(BUTTON_LEFT_VAR, BUTTON_LEFT_BIT);
+			pressedButton = BUTTON_LEFT_ID;
 		}
 
 		// reset RED for next cycle
@@ -127,7 +99,7 @@ bool check_buttons() {
 
 	}
 
-	if (furtherBrownChecks || furtherYellowChecks) {
+	if (pressedButton == 0x00) {
 
 		set_bit(ORANGE_DDR, ORANGE_PINNAME);    // set ORANGE for output
 		set_bit(ORANGE_PORT, ORANGE_PINNAME);   // ORANGE to high (see manual chapter 14.2.3)
@@ -136,27 +108,14 @@ bool check_buttons() {
 		nop();
 		nop();
 
-		if (furtherBrownChecks) {
-
-			// (BROWN-ORANGE)
-			if (is_bit_low(BROWN_PIN, BROWN_PINNAME)) {
-				set_bit(BUTTON_UP_VAR, BUTTON_UP_BIT);
-			} else {
-				clear_bit(BUTTON_UP_VAR, BUTTON_UP_BIT);
-			}
-
+		// (BROWN-ORANGE)
+		if (is_bit_low(BROWN_PIN, BROWN_PINNAME)) {
+			pressedButton = BUTTON_UP_ID;
 		}
 
-		if (furtherYellowChecks) {
-
-			// (YELLOW-ORANGE)
-			if (is_bit_low(YELLOW_PIN, YELLOW_PINNAME)) {
-				set_bit(BUTTON_RIGHT_VAR, BUTTON_RIGHT_BIT);
-				furtherYellowChecks = false;
-			} else {
-				clear_bit(BUTTON_RIGHT_VAR, BUTTON_RIGHT_BIT);
-			}
-
+		// (YELLOW-ORANGE)
+		if (is_bit_low(YELLOW_PIN, YELLOW_PINNAME)) {
+			pressedButton = BUTTON_RIGHT_ID;
 		}
 
 		// reset ORANGE for next cycle
@@ -169,7 +128,7 @@ bool check_buttons() {
 
 	}
 
-	if (furtherGreenChecks && furtherYellowChecks) {
+	if (pressedButton == 0x00) {
 
 		set_bit(YELLOW_DDR, YELLOW_PINNAME);    // set YELLOW for output
 		set_bit(YELLOW_PORT, YELLOW_PINNAME);   // YELLOW to high (see manual chapter 14.2.3)
@@ -180,7 +139,7 @@ bool check_buttons() {
 
 		// BUTTON_1 (GREEN-YELLOW)
 		if (is_bit_low(GREEN_PIN, GREEN_PINNAME)) {
-			setButton1 = true;
+			pressedButton = BUTTON_1_ID;
 		}
 
 		// reset YELLOW for next cycle
@@ -193,43 +152,33 @@ bool check_buttons() {
 
 	}
 
-	// MAIN (GREEN-BLACK)
-	if (is_bit_low(GREEN_PIN, GREEN_PINNAME)) {
-		set_bit(BUTTON_MAIN_VAR, BUTTON_MAIN_BIT);
-	} else {
-		clear_bit(BUTTON_MAIN_VAR, BUTTON_MAIN_BIT);
+	if ((pressedButton == 0x00)
+			|| (pressedButton == BUTTON_1_ID)
+			|| (pressedButton == BUTTON_2_ID)) {
 
-		if (setButton1) {
-			set_bit(BUTTON_1_VAR, BUTTON_1_BIT);
-		} else {
-			clear_bit(BUTTON_1_VAR, BUTTON_1_BIT);
-		}
-		if (setButton2) {
-			set_bit(BUTTON_2_VAR, BUTTON_2_BIT);
-		} else {
-			clear_bit(BUTTON_2_VAR, BUTTON_2_BIT);
+		// MAIN (GREEN-BLACK)
+		if (is_bit_low(GREEN_PIN, GREEN_PINNAME)) {
+			pressedButton = BUTTON_MAIN_ID;
 		}
 
 	}
 
-	// BUTTON_4
-	if (is_bit_low(BLUE_PIN, BLUE_PINNAME)) {
-		set_bit(BUTTON_4_VAR, BUTTON_4_BIT);
-	} else {
-		clear_bit(BUTTON_4_VAR, BUTTON_4_BIT);
+	if (pressedButton == 0x00) {
+
+		// BUTTON_4
+		if (is_bit_low(BLUE_PIN, BLUE_PINNAME)) {
+			pressedButton = BUTTON_4_ID;
+		}
+
 	}
 
-	bool result = false;
-	if (buttons0 != txbuffer[BUTTONS0]) {
-		result = true;
-		txbuffer[BUTTONS0] = buttons0;
-		printf("BUTTONS0 %d %d %d\n", buttons0, buttons1, furtherGreenChecks ? 1 : 0);
+	if (pressedButton != txbuffer[BUTTONS]) {
+
+		txbuffer[BUTTONS] = pressedButton;
+		return true;
+
+	} else {
+		return false;
 	}
-	if (buttons1 != txbuffer[BUTTONS1]) {
-		result = true;
-		txbuffer[BUTTONS1] = buttons1;
-		printf("BUTTONS1 %d %d %d\n", buttons0, buttons1, furtherGreenChecks ? 1 : 0);
-	}
-	return result;
 
 }
