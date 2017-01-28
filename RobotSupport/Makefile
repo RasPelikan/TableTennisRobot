@@ -35,6 +35,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 C_SOURCE_FILES += \
 $(abspath src/main/c/main.c) \
 $(abspath src/main/c/uart.c) \
+$(abspath src/main/c/I2C_slave.c) \
 $(abspath src/main/c/buttons.c)
 
 #includes common to all targets

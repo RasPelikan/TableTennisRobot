@@ -5,14 +5,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.pelikanit.ttr.admin.HttpsAdmin;
-import com.pelikanit.ttr.interaction.ButtonService;
+import com.pelikanit.ttr.support.ButtonService;
+import com.pelikanit.ttr.support.NewDataIndicatorListener;
 import com.pelikanit.ttr.utils.ConfigurationUtils;
-import com.pi4j.component.servo.ServoProvider;
-import com.pi4j.component.servo.impl.PCA9685GpioServoProvider;
 import com.pi4j.gpio.extension.pca.PCA9685GpioProvider;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.i2c.I2CBus;
+import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.impl.I2CFactoryProviderRaspberryPi;
 import com.pi4j.wiringpi.GpioUtil;
 
@@ -29,13 +29,15 @@ public class RobotDaemon implements Shutdownable {
 	
 	private GpioController gpioController;
 	
+	private I2CDevice supportDevice;
+	
+	private NewDataIndicatorListener newDataIndicatorListener;
+	
 	private ButtonService buttonService;
 	
 	private I2CBus i2cBus;
 	
 	private PCA9685GpioProvider servoGpioProvider;
-	
-	private ServoProvider servoProvider;
 	
 	public static void main(String[] args) {
 
@@ -134,6 +136,8 @@ public class RobotDaemon implements Shutdownable {
 		
 		buttonService.shutdown();
 		
+		newDataIndicatorListener.shutdown();
+		
 		servoGpioProvider.shutdown();
 		
 		i2cBus.close();
@@ -157,9 +161,12 @@ public class RobotDaemon implements Shutdownable {
 		i2cBus = new I2CFactoryProviderRaspberryPi()
 			.getBus(config.getI2CBus(), 1, TimeUnit.SECONDS);
 		
-		servoGpioProvider = new PCA9685GpioProvider(i2cBus, config.getServocontrollerAddress());
+		supportDevice = i2cBus.getDevice(config.getSupportI2CAddress());
 		
-		servoProvider = new PCA9685GpioServoProvider(servoGpioProvider);
+		servoGpioProvider = new PCA9685GpioProvider(
+				i2cBus, config.getServocontrollerAddress());
+
+		newDataIndicatorListener = new NewDataIndicatorListener(this, config);
 		
 		buttonService = new ButtonService(this, config);
 		
@@ -232,8 +239,12 @@ public class RobotDaemon implements Shutdownable {
 		return i2cBus;
 	}
 	
-	public ServoProvider getServoProvider() {
-		return servoProvider;
+	public PCA9685GpioProvider getServoProvider() {
+		return servoGpioProvider;
+	}
+
+	public I2CDevice getSupportDevice() {
+		return supportDevice;
 	}
 	
 }
