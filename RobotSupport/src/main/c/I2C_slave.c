@@ -62,7 +62,6 @@ void init_twi_slave(uint8_t adr)
 	TWCR &= ~(1<<TWSTA)|(1<<TWSTO);
 	TWCR|= (1<<TWEA) | (1<<TWEN)|(1<<TWIE); 	
 	buffer_adr=0xFF;  
-	sei();
 }
 
 //########################################################################################## ISR (TWI_vect) 
@@ -109,7 +108,6 @@ ISR (TWI_vect)
 
 		case TW_ST_SLA_ACK: 						//
 		case TW_ST_DATA_ACK:{ 						// 0xB8 Slave Transmitter, weitere Daten wurden angefordert
-			uint8_t adr = buffer_adr;
 			if (buffer_adr == 0xFF) 				// zuvor keine Leseadresse angegeben! 
 				{
 					buffer_adr=0;
