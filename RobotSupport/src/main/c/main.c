@@ -55,6 +55,7 @@ void init_timer() {
  */
 void boot() {
 
+	cli();
 	uart_init();
 	stdout = &uart_output;
 	stdin  = &uart_input;
@@ -71,8 +72,10 @@ void boot() {
 	/*
 	 * I2C slave
 	 */
+	cli();
 	txbuffer[STATUS_ADDRESS] = STATUS_OK;
 	init_twi_slave(I2C_ADDRESS);
+	sei();
 
 	/*
 	 * configure MCU

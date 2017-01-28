@@ -4,11 +4,15 @@
 
 #include <stdio.h>
 #include <avr/io.h>
+#include <stdbool.h>
+
+extern bool UART_ACTIVE;
 
 void uart_putchar(char c, FILE *stream);
 char uart_getchar(FILE *stream);
 
 void uart_init(void);
+void uart_shutdown(void);
 
 /* http://www.ermicro.com/blog/?p=325 */
 
