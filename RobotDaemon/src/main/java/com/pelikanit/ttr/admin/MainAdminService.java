@@ -9,7 +9,9 @@ import javax.ws.rs.core.MediaType;
 import com.pelikanit.ttr.RobotDaemon;
 import com.pelikanit.ttr.support.ButtonListener;
 import com.pelikanit.ttr.support.ButtonService.Button;
+import com.pi4j.gpio.extension.pca.PCA9685GpioProvider;
 import com.pi4j.gpio.extension.pca.PCA9685Pin;
+import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioPinPwmOutput;
 
 @Path("/ttr")
@@ -37,6 +39,56 @@ public class MainAdminService {
 
 	}
 
+	static GpioPinPwmOutput pinM1A;
+	static GpioPinPwmOutput pinM1B;
+	static GpioPinPwmOutput pinM2A;
+	static GpioPinPwmOutput pinM2B;
+	
+	@GET
+	@Path("/test2")
+	public String test2() throws Exception {
+
+		final GpioController gpioController = daemon.getGpioController();
+		final PCA9685GpioProvider gpioProvider = daemon.getPwmGpioProvider();
+		if (pinM1A == null) {
+			System.err.println("Init M1A");
+			pinM1A = gpioController
+				.provisionPwmOutputPin(gpioProvider,
+						PCA9685Pin.PWM_02);
+			System.err.println("Init M1A done");
+		}
+		if (pinM1B == null) {
+			System.err.println("Init M1B");
+			pinM1B = gpioController
+				.provisionPwmOutputPin(gpioProvider,
+						PCA9685Pin.PWM_03);
+			System.err.println("Init M1B done");
+		}
+		if (pinM2A == null) {
+			System.err.println("Init M2A");
+			pinM2A = gpioController
+				.provisionPwmOutputPin(gpioProvider,
+						PCA9685Pin.PWM_04);
+			System.err.println("Init M2A done");
+		}
+		if (pinM2B == null) {
+			System.err.println("Init M2B");
+			pinM2B = gpioController
+				.provisionPwmOutputPin(gpioProvider,
+						PCA9685Pin.PWM_05);
+			System.err.println("Init M2B done");
+		}
+		
+		pinM1A.setPwm(PCA9685GpioProvider.PWM_STEPS);
+		pinM2A.setPwm(PCA9685GpioProvider.PWM_STEPS);
+		Thread.sleep(10000);
+		pinM1A.setPwm(1);
+		pinM2A.setPwm(1);
+		
+		return "OK";
+		
+	}
+	
 	static GpioPinPwmOutput pin1;
 	static GpioPinPwmOutput pin2;
 	
@@ -44,17 +96,18 @@ public class MainAdminService {
 	@Path("/test")
 	public String test() throws Exception {
 
+		final GpioController gpioController = daemon.getGpioController();
 		if (pin1 == null) {
 			System.err.println("Init 1");
-			pin1 = daemon.getGpioController()
-				.provisionPwmOutputPin(daemon.getServoProvider(),
+			pin1 = gpioController
+				.provisionPwmOutputPin(daemon.getPwmGpioProvider(),
 						PCA9685Pin.PWM_00);
 			System.err.println("Init 1 done");
 		}
 		if (pin2 == null) {
 			System.err.println("Init 2");
-			pin2 = daemon.getGpioController()
-				.provisionPwmOutputPin(daemon.getServoProvider(),
+			pin2 = gpioController
+				.provisionPwmOutputPin(daemon.getPwmGpioProvider(),
 						PCA9685Pin.PWM_01);
 			System.err.println("Init 2 done");
 		}

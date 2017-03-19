@@ -1,5 +1,8 @@
 package com.pelikanit.ttr;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,10 +40,13 @@ public class RobotDaemon implements Shutdownable {
 	
 	private I2CBus i2cBus;
 	
-	private PCA9685GpioProvider servoGpioProvider;
+	private PCA9685GpioProvider pwmGpioProvider;
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 
+		// must be done as soon after program start as possible
+		correctPCA9685MaxFrequency();
+		
 		// process arguments
 		final ConfigurationUtils config = new ConfigurationUtils(args);
 
@@ -85,7 +91,22 @@ public class RobotDaemon implements Shutdownable {
 			
 		}
 		
+	}
+	
+	private static void correctPCA9685MaxFrequency() throws Exception {
+
+		// see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf chapter 7.3.5
+		final BigDecimal REAL_MAX_FREQUENCY = new BigDecimal("1526");
 		
+		final Field field = PCA9685GpioProvider.class.getDeclaredField("MAX_FREQUENCY");
+		field.setAccessible(true);
+		Field modifiersField = Field.class.getDeclaredField("modifiers");
+		modifiersField.setAccessible(true);
+		int modifiers = modifiersField.getInt(field);
+		modifiers &= ~Modifier.FINAL;
+		modifiersField.setInt(field, modifiers);
+		field.set(null, REAL_MAX_FREQUENCY);
+
 	}
 	
 	@Override
@@ -138,7 +159,7 @@ public class RobotDaemon implements Shutdownable {
 		
 		newDataIndicatorListener.shutdown();
 		
-		servoGpioProvider.shutdown();
+		pwmGpioProvider.shutdown();
 		
 		i2cBus.close();
 		
@@ -163,9 +184,9 @@ public class RobotDaemon implements Shutdownable {
 		
 		supportDevice = i2cBus.getDevice(config.getSupportI2CAddress());
 		
-		servoGpioProvider = new PCA9685GpioProvider(
+		pwmGpioProvider = new PCA9685GpioProvider(
 				i2cBus, config.getServocontrollerAddress());
-
+		
 		newDataIndicatorListener = new NewDataIndicatorListener(this, config);
 		
 		buttonService = new ButtonService(this, config);
@@ -239,8 +260,8 @@ public class RobotDaemon implements Shutdownable {
 		return i2cBus;
 	}
 	
-	public PCA9685GpioProvider getServoProvider() {
-		return servoGpioProvider;
+	public PCA9685GpioProvider getPwmGpioProvider() {
+		return pwmGpioProvider;
 	}
 
 	public I2CDevice getSupportDevice() {
