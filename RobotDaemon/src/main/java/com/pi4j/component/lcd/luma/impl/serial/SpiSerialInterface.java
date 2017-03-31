@@ -9,10 +9,10 @@ import com.pi4j.io.spi.SpiDevice;
 
 public class SpiSerialInterface implements SerialInterface {
 
-	public static int DEFAULT_SPEED = 8000000;
-	public static int DEFAULT_TRANSFER_SIZE = 4096;
-	private static PinState CMD_PIN_STATE = PinState.LOW;
-	private static PinState DATA_PIN_STATE = PinState.HIGH;
+	public static final int DEFAULT_SPEED = 8000000;
+	public static final int DEFAULT_TRANSFER_SIZE = 4096;
+	private static final PinState CMD_PIN_STATE = PinState.LOW;
+	private static final PinState DATA_PIN_STATE = PinState.HIGH;
 	
 	private final SpiDevice spiDevice;
 	private final GpioPinDigitalOutput dcPin;

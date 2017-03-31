@@ -4,12 +4,11 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.Random;
 
-import org.apache.commons.cli.Options;
-
+import com.lexicalscope.jewel.cli.HelpRequestedException;
 import com.pi4j.component.lcd.MatrixLCD;
 import com.pi4j.wiringpi.GpioUtil;
 
-public class Bounce extends Demo {
+public class Bounce extends Demo<DemoOptions> {
 
 	public static class Ball {
 		
@@ -52,27 +51,36 @@ public class Bounce extends Demo {
 		}
 	};
 	
-	public static void main(final String[] args) throws Exception {
+	public static void main(final String[] arguments) throws Exception {
 
-		GpioUtil.enableNonPrivilegedAccess();
-		
-		final Bounce bounce = new Bounce();
-		
-		final Options options = bounce.prepareOptions();
-		if (!bounce.parseOptions(args, options)) {
-			return;
+		try {
+			
+			final Bounce bounce = new Bounce(arguments);
+			
+			GpioUtil.enableNonPrivilegedAccess();
+	
+			bounce.run();
+			
+		} catch (HelpRequestedException e) {
+			System.out.println(e.getMessage());
 		}
-		
-		bounce.run();
 		
 	}
 	
 	private int fps = 0;
 	private String fpsString = "";
 	
+	public Bounce(final String[] arguments) {
+		
+		super(arguments);
+		
+	}
+	
 	@Override
-	protected String getDemoName() {
-		return "java " + getClass().getName();
+	protected Class<DemoOptions> getOptionsInterface() {
+		
+		return DemoOptions.class;
+		
 	}
 	
 	@Override
