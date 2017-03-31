@@ -10,11 +10,19 @@ public interface MatrixLCD {
 		BLACK_WHITE, RGB, RGBA
 	}
 	
+	enum Rotation {
+		CW0, CW90, CW180, CW270
+	}
+	
 	void clear() throws IOException;
 	
 	int getWidth();
 	
+	int getRotatedWidth();
+	
 	int getHeight();
+	
+	int getRotatedHeight();
 	
 	Mode getMode();
 	
@@ -27,5 +35,7 @@ public interface MatrixLCD {
 	void display() throws IOException;
 	
 	void shutdown() throws IOException;
+	
+	Rotation getRotation();
 	
 }

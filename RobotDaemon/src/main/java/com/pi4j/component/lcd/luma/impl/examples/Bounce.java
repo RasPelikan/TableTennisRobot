@@ -88,7 +88,7 @@ public class Bounce extends Demo<DemoOptions> {
 		
 		final Ball[] balls = new Ball[10];
 		for (int i = 0; i < 10; ++i) {
-			balls[i] = new Ball(lcd.getWidth(), lcd.getHeight(), (int) (i * 1.5));
+			balls[i] = new Ball(lcd.getRotatedWidth(), lcd.getRotatedHeight(), (int) (i * 1.5));
 		}
 		
 		long before = System.currentTimeMillis();
@@ -99,7 +99,7 @@ public class Bounce extends Demo<DemoOptions> {
 			final Graphics2D graphics = lcd.getGraphics2D();
 			graphics.setColor(Color.WHITE);
 			
-			graphics.drawRect(0, 0, lcd.getWidth() - 1, lcd.getHeight() - 1);
+			graphics.drawRect(0, 0, lcd.getRotatedWidth() - 1, lcd.getRotatedHeight() - 1);
 
 			for (int i = 0; i < 10; ++i) {
 				balls[i].draw(graphics);

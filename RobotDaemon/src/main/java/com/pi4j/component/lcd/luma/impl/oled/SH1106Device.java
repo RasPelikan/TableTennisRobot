@@ -1,7 +1,6 @@
 package com.pi4j.component.lcd.luma.impl.oled;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import java.io.IOException;
 
 import com.pi4j.component.lcd.luma.SerialInterface;
@@ -12,13 +11,14 @@ public class SH1106Device extends LumaDevice {
 	private final int pages;
 	
 	public SH1106Device(final SerialInterface serialInterface,
-			final int width, final int height) throws IOException {
+			final int width, final int height,
+			final Rotation rotation) throws IOException {
 		
-		super(serialInterface, Mode.BLACK_WHITE, width, height);
+		super(serialInterface, Mode.BLACK_WHITE, width, height, rotation);
 		
 		this.pages = height / SH1106Constants.PAGE_HEIGHT;
 		
-		super.serialInterface.command(
+		super.getSerialInterface().command(
 				SH1106Constants.DISPLAYOFF,
 				SH1106Constants.MEMORYMODE,
 				SH1106Constants.SETHIGHCOLUMN, (byte) 0xB0, (byte) 0xC8,
@@ -50,25 +50,22 @@ public class SH1106Device extends LumaDevice {
 	@Override
 	protected BufferedImage buildImage() {
 		
-		return new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+		return new BufferedImage(getRotatedWidth(), getRotatedHeight(),
+				BufferedImage.TYPE_BYTE_BINARY);
 		
 	}
-
+	
 	@Override
 	public void display() throws IOException {
 		
-		assert this.image.getType() == BufferedImage.TYPE_BYTE_BINARY;
-		assert this.image.getWidth() == getWidth();
-		assert this.image.getHeight() == getHeight();
+		final SerialInterface serialInterface = this.getSerialInterface();
 
 		byte setPageAddress = (byte) 0xB0;
 		byte[] buffer = new byte[this.getWidth()];
 		
-		final WritableRaster imageData = this.image.getRaster();
-
 		for (int page = 0; page < this.pages; ++page) {
 			
-			this.serialInterface.command(setPageAddress, (byte) 0x02, (byte) 0x10);
+			serialInterface.command(setPageAddress, (byte) 0x02, (byte) 0x10);
 			
 			for (int x = 0; x < this.getWidth(); ++x) {
 				
@@ -77,7 +74,7 @@ public class SH1106Device extends LumaDevice {
 				int y = page * SH1106Constants.PAGE_HEIGHT;;
 				for (int i = 1; i != 256 /* after 8 bits */; i <<= 1) {
 					
-					if (imageData.getSample(x, y, 0) == 1) {
+					if (super.getSample(x, y, 0) == 1) {
 						value |= i;
 					}
 					++y;
@@ -88,7 +85,7 @@ public class SH1106Device extends LumaDevice {
 						
 			}
 
-			this.serialInterface.data(buffer);
+			serialInterface.data(buffer);
 
 			setPageAddress += 1;
 			

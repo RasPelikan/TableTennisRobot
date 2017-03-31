@@ -2,6 +2,7 @@ package com.pi4j.component.lcd.luma.impl.core;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 
 import com.pi4j.component.lcd.MatrixLCD;
@@ -15,20 +16,24 @@ public abstract class LumaDevice implements MatrixLCD {
 	private final int width;
 	
 	private final int height;
-
-	protected final SerialInterface serialInterface;
-
-	protected BufferedImage image;
 	
-	protected Graphics2D graphics2D;
+	private Rotation rotation = Rotation.CW0;
+	
+	private final SerialInterface serialInterface;
+
+	private BufferedImage image;
+	
+	private Graphics2D graphics2D;
 	
 	protected LumaDevice(final SerialInterface serialInterface,
-			final Mode mode, final int width, final int height) {
+			final Mode mode, final int width, final int height,
+			final Rotation rotation) {
 
 		this.serialInterface = serialInterface;
 		this.mode = mode;
 		this.width = width;
 		this.height = height;
+		this.rotation = rotation;
 		
 		createBufferedImage();
 
@@ -37,14 +42,38 @@ public abstract class LumaDevice implements MatrixLCD {
 	@Override
 	public int getHeight() {
 		
-		return height;
+		return this.height;
 		
+	}
+	
+	public int getRotatedHeight() {
+		
+		switch (this.rotation) {
+		case CW90:
+		case CW270:
+			return getWidth();
+		default:
+			return getHeight();
+		}
+		
+	}
+	
+	public int getRotatedWidth() {
+
+		switch (this.rotation) {
+		case CW90:
+		case CW270:
+			return getHeight();
+		default:
+			return getWidth();
+		}
+
 	}
 	
 	@Override
 	public int getWidth() {
 		
-		return width;
+		return this.width;
 		
 	}
 	
@@ -133,4 +162,45 @@ public abstract class LumaDevice implements MatrixLCD {
 
 	}
 
+	public Rotation getRotation() {
+		return rotation;
+	}
+
+	protected SerialInterface getSerialInterface() {
+		return serialInterface;
+	};
+	
+	protected BufferedImage getImage() {
+		return image;
+	}
+	
+	protected int getSample(final int x, final int y, final int b) {
+		
+		final int xTransformed;
+		final int yTransformed;
+		switch (this.rotation) {
+		case CW0:
+			xTransformed = x;
+			yTransformed = y;
+			break;
+		case CW90:
+			xTransformed = this.height - y - 1;
+			yTransformed = x;
+			break;
+		case CW180:
+			xTransformed = this.width - x - 1;
+			yTransformed = this.height - y - 1;
+			break;
+		default:
+			xTransformed = y;
+			yTransformed = this.width - x - 1;
+			break;
+		}
+		
+		final WritableRaster raster = this.image.getRaster();
+		
+		return raster.getSample(xTransformed, yTransformed, b);
+		
+	}
+	
 }
