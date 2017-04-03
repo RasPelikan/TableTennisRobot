@@ -166,7 +166,7 @@ public abstract class LumaDevice implements MatrixLCD {
 		return rotation;
 	}
 
-	protected SerialInterface getSerialInterface() {
+	public SerialInterface getSerialInterface() {
 		return serialInterface;
 	};
 	

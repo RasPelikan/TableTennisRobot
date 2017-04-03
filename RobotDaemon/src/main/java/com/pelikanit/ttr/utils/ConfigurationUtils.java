@@ -27,6 +27,15 @@ public class ConfigurationUtils {
 	private static final String PROPS_SERVO_SPEED_SLOT = "servocontroller.servo.speed.slot";
 	private static final String PROPS_SERVO_SPIN_SLOT = "servocontroller.servo.spin.slot";
 	
+	private static final String PROPS_DISPLAY_SPICHANNEL = "display.spi.channel";
+	private static final String PROPS_DISPLAY_SPISPEED = "display.spi.speed";
+	private static final String PROPS_DISPLAY_GPIORESET = "display.gpio.reset";
+	private static final String PROPS_DISPLAY_GPIODC = "display.gpio.dc";
+	private static final String PROPS_DISPLAY_CLASS = "display.class";
+	private static final String PROPS_DISPLAY_WIDTH = "display.width";
+	private static final String PROPS_DISPLAY_HEIGHT = "display.height";
+	private static final String PROPS_DISPLAY_ROTATION = "display.rotation";
+	
 	private Properties props;
 	
 	public ConfigurationUtils(final String[] args) {
@@ -126,6 +135,38 @@ public class ConfigurationUtils {
 		return getIntPropertyAvailable(PROPS_SERVOCONTROLLER_ADDRESS);
 	}
 
+	public int getDisplaySpiChannel() {
+		return getIntPropertyAvailable(PROPS_DISPLAY_SPICHANNEL);
+	}
+
+	public int getDisplaySpiSpeed() {
+		return getIntPropertyAvailable(PROPS_DISPLAY_SPISPEED);
+	}
+
+	public int getDisplayGpioReset() {
+		return getIntPropertyAvailable(PROPS_DISPLAY_GPIORESET);
+	}
+
+	public int getDisplayGpioDc() {
+		return getIntPropertyAvailable(PROPS_DISPLAY_GPIODC);
+	}
+
+	public String getDisplayClass() {
+		return props.getProperty(PROPS_DISPLAY_CLASS);
+	}
+
+	public int getDisplayWidth() {
+		return getIntPropertyAvailable(PROPS_DISPLAY_WIDTH);
+	}
+
+	public int getDisplayHeight() {
+		return getIntPropertyAvailable(PROPS_DISPLAY_HEIGHT);
+	}
+
+	public int getDisplayRotation() {
+		return getIntPropertyAvailable(PROPS_DISPLAY_ROTATION);
+	}
+	
 	@SuppressWarnings("unused")
 	private float getFloatPropertyAvailable(final String propsName) {
 		

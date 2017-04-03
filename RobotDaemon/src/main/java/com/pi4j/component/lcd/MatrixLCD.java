@@ -4,6 +4,8 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+import com.pi4j.component.lcd.luma.SerialInterface;
+
 public interface MatrixLCD {
 
 	enum Mode {
@@ -37,5 +39,7 @@ public interface MatrixLCD {
 	void shutdown() throws IOException;
 	
 	Rotation getRotation();
+	
+	SerialInterface getSerialInterface();
 	
 }

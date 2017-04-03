@@ -1,5 +1,8 @@
 package com.pelikanit.ttr;
 
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -7,16 +10,27 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
+
 import com.pelikanit.ttr.admin.HttpsAdmin;
 import com.pelikanit.ttr.support.ButtonService;
 import com.pelikanit.ttr.support.NewDataIndicatorListener;
 import com.pelikanit.ttr.utils.ConfigurationUtils;
+import com.pi4j.component.lcd.MatrixLCD;
+import com.pi4j.component.lcd.MatrixLCD.Rotation;
+import com.pi4j.component.lcd.luma.SerialInterface;
+import com.pi4j.component.lcd.luma.impl.serial.SpiSerialInterface;
 import com.pi4j.gpio.extension.pca.PCA9685GpioProvider;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
+import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.io.i2c.I2CBus;
 import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.impl.I2CFactoryProviderRaspberryPi;
+import com.pi4j.io.spi.SpiChannel;
+import com.pi4j.io.spi.SpiDevice;
+import com.pi4j.io.spi.SpiFactory;
 import com.pi4j.wiringpi.GpioUtil;
 
 public class RobotDaemon implements Shutdownable {
@@ -41,6 +55,8 @@ public class RobotDaemon implements Shutdownable {
 	private I2CBus i2cBus;
 	
 	private PCA9685GpioProvider pwmGpioProvider;
+	
+	private MatrixLCD display;
 	
 	public static void main(String[] args) throws Exception {
 
@@ -137,6 +153,7 @@ public class RobotDaemon implements Shutdownable {
 		initializeShutdownHook();
 		initializeProperties(config);
 		initializeGpio(config);
+		initializeDisplay(config);
 		initializeAdminHttpServer(config);
 		
 		logger.info("Init complete");
@@ -146,6 +163,7 @@ public class RobotDaemon implements Shutdownable {
 	private void stop() throws Exception {
 		
 		stopAdminHttpServer();
+		stopDisplay();
 		stopGpio();
 		stopShutdownHook();
 
@@ -153,6 +171,12 @@ public class RobotDaemon implements Shutdownable {
 		
 	}
 
+	private void stopDisplay() throws Exception {
+		
+		display.shutdown();
+		
+	}
+	
 	private void stopGpio() throws Exception {
 		
 		buttonService.shutdown();
@@ -190,6 +214,52 @@ public class RobotDaemon implements Shutdownable {
 		newDataIndicatorListener = new NewDataIndicatorListener(this, config);
 		
 		buttonService = new ButtonService(this, config);
+		
+	}
+	
+	private void initializeDisplay(final ConfigurationUtils config) throws Exception {
+		
+		final SpiChannel spiChannel = SpiChannel.getByNumber(
+				config.getDisplaySpiChannel());
+		final SpiDevice displaySpiDevice = SpiFactory.getInstance(spiChannel,
+				config.getDisplaySpiSpeed());
+		
+		final GpioPinDigitalOutput resetPin = gpioController
+				.provisionDigitalOutputPin(RaspiPin
+						.getPinByAddress(config.getDisplayGpioReset()));
+		final GpioPinDigitalOutput dcPin = gpioController
+				.provisionDigitalOutputPin(RaspiPin
+						.getPinByAddress(config.getDisplayGpioDc()));
+		
+		final SpiSerialInterface serialInterface = new SpiSerialInterface(
+				displaySpiDevice, resetPin, dcPin,
+				SpiSerialInterface.DEFAULT_TRANSFER_SIZE);
+		
+		final Rotation rotation = MatrixLCD.Rotation.valueOf(
+				"CW" + config.getDisplayRotation());
+		
+		@SuppressWarnings("unchecked")
+		final Class<MatrixLCD> displayClass = (Class<MatrixLCD>) Class.forName(
+				config.getDisplayClass());
+		final Constructor<MatrixLCD> constructor = displayClass.getConstructor(
+				SerialInterface.class, int.class, int.class,
+				MatrixLCD.Rotation.class);
+		display = constructor.newInstance(serialInterface,
+				config.getDisplayWidth(),
+				config.getDisplayHeight(), rotation);
+		
+		display.createBufferedImage();
+		
+		final InputStream logoStream = getClass().getClassLoader().getResourceAsStream("logo.png");
+		try {
+			final BufferedImage logo = ImageIO.read(logoStream);
+			display.getGraphics2D().drawImage(logo,
+					(display.getWidth() - logo.getWidth()) / 2, 
+					(display.getHeight() - logo.getHeight()) / 2, null);
+			display.display();
+		} finally {
+			logoStream.close();
+		}
 		
 	}
 	

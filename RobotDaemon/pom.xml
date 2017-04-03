@@ -112,8 +112,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<!-- <mainClass>com.pelikanit.ttr.RobotDaemon</mainClass> -->
-							<mainClass>com.pi4j.component.lcd.luma.impl.examples.Bounce</mainClass>
+							<mainClass>com.pelikanit.ttr.RobotDaemon</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
